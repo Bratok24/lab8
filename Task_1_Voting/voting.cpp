@@ -5,9 +5,10 @@
 #include <vector>
 #include <unordered_set>
 
-static std::vector<std::string> names;           
-static std::unordered_set<std::string> voted;    
-static size_t duplicateCount = 0;                
+
+static std::vector<std::string> names;                     
+static std::unordered_set<unsigned long long> votedHashes; 
+static size_t duplicateCount = 0;                       
 
 // Собственная хэш-функция
 unsigned long long hashSurname(const std::string& surname) {
@@ -32,16 +33,17 @@ void enrolled(const std::string& filepath) {
         if (end != std::string::npos) {
             surname = surname.substr(0, end + 1);
         } else {
-            continue; 
+            continue;  
         }
-
         if (surname.empty()) continue;
 
-        // Проверяем, голосовал ли уже
-        if (voted.find(surname) != voted.end()) {
-            duplicateCount++;
+        // ВЫЗОВ ХЭШ ФУНКЦИИ 
+        unsigned long long hash = hashSurname(surname);
+
+        if (votedHashes.find(hash) != votedHashes.end()) {
+            duplicateCount++; 
         } else {
-            voted.insert(surname);
+            votedHashes.insert(hash);
             names.push_back(surname);
         }
     }
@@ -51,10 +53,12 @@ void enrolled(const std::string& filepath) {
 void unenrolled(const std::string& surname) {
     if (surname.empty()) return;
 
-    if (voted.find(surname) != voted.end()) {
-        duplicateCount++;
+    unsigned long long hash = hashSurname(surname);
+
+    if (votedHashes.find(hash) != votedHashes.end()) {
+        duplicateCount++; 
     } else {
-        voted.insert(surname);
+        votedHashes.insert(hash);
         names.push_back(surname);
     }
 }
